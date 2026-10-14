@@ -43,5 +43,14 @@ jobs:
       - name: Deploy website
         run: docker compose -p automated-website-deployment up -d --build --force-recreate
 
+
       - name: Verify deployment
-        run: curl.exe --fail http://localhost:5000/health
+        shell: cmd
+        run: |
+          for /L %%i in (1,1,12) do (
+            curl.exe --fail --silent --show-error http://127.0.0.1:5000/health && exit /b 0
+            timeout /t 5 /nobreak >nul
+          )
+          echo Health check failed.
+          exit /b 1
+
