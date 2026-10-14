@@ -1,0 +1,10 @@
+
+services:
+  website:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: automated-website:latest
+    ports:
+      - "5000:5000"
+    restart: unless-stopped

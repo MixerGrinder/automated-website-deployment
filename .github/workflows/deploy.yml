@@ -1,0 +1,50 @@
+
+name: Automated Website Deployment
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: python -m unittest discover -s tests -v
+
+  deploy:
+    needs: test
+    runs-on: [self-hosted, Windows, X64]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy website
+        shell: powershell
+        run: docker compose up -d --build --force-recreate
+
+      - name: Verify deployment
+        shell: powershell
+        run: |
+          $response = Invoke-RestMethod -Uri "http://localhost:5000/health"
+          if ($response.status -ne "healthy") {
+            throw "Health check failed"
+          }
+          Write-Host "Deployment successful!"
