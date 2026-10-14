@@ -32,19 +32,16 @@ jobs:
     needs: test
     runs-on: [self-hosted, Windows, X64]
 
+    defaults:
+      run:
+        shell: cmd
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Deploy website
-        shell: powershell
-        run: docker compose up -d --build --force-recreate
+        run: docker compose -p automated-website-deployment up -d --build --force-recreate
 
       - name: Verify deployment
-        shell: powershell
-        run: |
-          $response = Invoke-RestMethod -Uri "http://localhost:5000/health"
-          if ($response.status -ne "healthy") {
-            throw "Health check failed"
-          }
-          Write-Host "Deployment successful!"
+        run: curl.exe --fail http://localhost:5000/health
